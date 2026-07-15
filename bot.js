@@ -1,46 +1,3 @@
-// === YENİ İNDİKATÖRLER (Supertrend + MACD) ===
-function supertrend(bars, period = 10, multiplier = 3) {
-  if (bars.length < 40) return null;
-  const atr = calcATR(bars, period);
-  if (!atr) return null;
-
-  let upperBand = bars[period].h + multiplier * atr;
-  let lowerBand = bars[period].l - multiplier * atr;
-  let trend = 1;
-
-  for (let i = period + 1; i < bars.length; i++) {
-    const hl2 = (bars[i].h + bars[i].l) / 2;
-    upperBand = Math.min(upperBand, hl2 + multiplier * atr);
-    lowerBand = Math.max(lowerBand, hl2 - multiplier * atr);
-    if (bars[i].c > upperBand) trend = 1;
-    else if (bars[i].c < lowerBand) trend = -1;
-  }
-  return { trend, upper: upperBand, lower: lowerBand };
-}
-
-function macd(bars) {
-  const closes = bars.map(b => b.c);
-  const ema12 = emaSeries(closes, 12);
-  const ema26 = emaSeries(closes, 26);
-  const macdLine = ema12[ema12.length-1] - ema26[ema26.length-1];
-  return { histogram: macdLine };
-}
-  // === YENİ İNDİKATÖRLERLE GÜÇLENDİR ===
-  const st = supertrend(bars);
-  const mc = macd(bars);
-
-  if (st) {
-    if (st.trend === 1) {
-      confidence += 22;
-      signals.push("Supertrend YUKARI");
-    } else if (st.trend === -1) {
-      confidence -= 18;
-      signals.push("Supertrend AŞAĞI");
-    }
-  }
-  if (mc.histogram > 0) confidence += 12;
-console.log("🔍 Vadeli Tarama Başladı (Supertrend + MACD aktif)");
-
 const crypto = require('crypto');
 const fs = require('fs');
 
@@ -2799,6 +2756,47 @@ async function start() {
     process.exit(1);
   }
   console.log('✅ Telegram bağlantısı başarılı!');
+// === YENİ İNDİKATÖRLER (Supertrend + MACD) ===
+function supertrend(bars, period = 10, multiplier = 3) {
+  if (bars.length < 40) return null;
+  const atr = calcATR(bars, period);
+  if (!atr) return null;
+
+  let upperBand = bars[period].h + multiplier * atr;
+  let lowerBand = bars[period].l - multiplier * atr;
+  let trend = 1;
+
+  for (let i = period + 1; i < bars.length; i++) {
+    const hl2 = (bars[i].h + bars[i].l) / 2;
+    upperBand = Math.min(upperBand, hl2 + multiplier * atr);
+    lowerBand = Math.max(lowerBand, hl2 - multiplier * atr);
+    if (bars[i].c > upperBand) trend = 1;
+    else if (bars[i].c < lowerBand) trend = -1;
+  }
+  return { trend, upper: upperBand, lower: lowerBand };
+}
+function macd(bars) {
+  const closes = bars.map(b => b.c);
+  const ema12 = emaSeries(closes, 12);
+  const ema26 = emaSeries(closes, 26);
+  const macdLine = ema12[ema12.length-1] - ema26[ema26.length-1];
+  return { histogram: macdLine };
+}
+  // === YENİ İNDİKATÖRLERLE GÜÇLENDİR ===
+  const st = supertrend(bars);
+  const mc = macd(bars);
+
+  if (st) {
+    if (st.trend === 1) {
+      confidence += 22;
+      signals.push("Supertrend YUKARI");
+    } else if (st.trend === -1) {
+      confidence -= 18;
+      signals.push("Supertrend AŞAĞI");
+    }
+  }
+  if (mc.histogram > 0) confidence += 12;
+console.log("🔍 Vadeli Tarama Başladı (Supertrend + MACD aktif)");
 
   // Borsa sembollerini yükle (tüm coinler)
   await loadSymbolRegistry();
